@@ -1,0 +1,9 @@
+all:
+  hosts:
+    localhost:
+  children: 
+    ubuntu-group:
+      hosts:
+        localhost:
+          # for ubuntu 16.04 or more
+          ansible_python_interpreter: /usr/bin/python3

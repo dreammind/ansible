@@ -1,0 +1,5 @@
+- name: ubuntu
+  hosts: ubuntu-group
+  become: yes
+  roles:
+    - { role: ubuntu }

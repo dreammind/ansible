@@ -1,0 +1,5 @@
+---
+-
+  playbook: playbooks/sample-role_playbook.yml
+  # inventory supported only ini format
+  inventory: inventories/serverspec_hosts.ini

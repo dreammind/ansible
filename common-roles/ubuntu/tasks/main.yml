@@ -1,0 +1,231 @@
+---
+#
+# Initialize
+#
+
+- name: Initialize block
+  block:
+    - name: be sure file contents changed
+      lineinfile: 
+        dest: /etc/apt/sources.list
+        regexp: "{{ item.regexp }}"
+        line:  "{{ item.line }}"
+        state: present
+        backrefs: yes
+        backup: yes
+      with_items:
+        - regexp: "^deb http://archive.ubuntu.com/ubuntu bionic main$"
+          line: 'deb http://archive.ubuntu.com/ubuntu bionic main restricted universe multiverse'
+        - regexp: "^deb http://archive.ubuntu.com/ubuntu bionic-security main$"
+          line: "deb http://archive.ubuntu.com/ubuntu bionic-security main restricted universe multiverse"
+        - regexp: "^deb http://archive.ubuntu.com/ubuntu bionic-updates main$"
+          line: "deb http://archive.ubuntu.com/ubuntu bionic-updates main restricted universe multiverse"
+      register: update_apt
+      when: ansible_distribution_release == 'bionic'
+
+    - name: run apt update
+      command: apt update
+      when: 
+        - update_apt is defined
+        - update_apt.changed
+
+#
+# main routine
+#
+- name: main routine
+  block:
+    - name: set timezone to Asia/Tokyo
+      timezone:
+        name: Asia/Tokyo
+
+    - name: add language-pack-ja
+      apt:
+        name: language-pack-ja
+        state: present
+
+    - name: ensure a locale exists
+      locale_gen:
+        name: ja_JP.UTF-8
+        state: present
+
+    - name: gets japanese manual
+      apt:
+        name: "{{ packages }}"
+        state: present
+      vars:
+        packages:
+          - manpages-ja
+          - manpages-ja-dev
+  
+
+##
+## snipets for file
+##
+#- name: snipets for file
+#  block:
+#    - name: be sure copy files
+#      copy:
+#        src: "{{ item }}"
+#        dest: /tmp/destdir
+#        owner: root
+#        group: root
+#        mode: 0644
+#      with_fileglob:
+#        - files/archives/*
+#
+#    # https://docs.ansible.com/ansible/latest/modules/synchronize_module.html
+#    - name: Synchronization of src on the control machine to dest on the remote hosts
+#      synchronize:
+#        src: files/archives
+#        dest: /some/absolute/path
+#
+#    - name: be sure original file copied
+#      copy:
+#        src: /tmp/test.conf
+#        dest: /tmp/test.conf.ORG
+#        force: no
+#
+#    - name: be sure mkdir file
+#      file:
+#        path: "{{ item }}"
+#        state: directory
+#        mode: 0755
+#      with_items:
+#        - /tmp/foo
+#        - /tmp/bar
+#
+#    - name: be sure remove file
+#      file:
+#        path: /tmp/toBeRemove
+#        state: absent
+#
+#    - name: be sure find files
+#      find:
+#        paths: /tmp/dummy_dir
+#        patterns: "*.zip"
+#      register: found_files
+#
+#    - name: be sure symbolic link create
+#      file:
+#        src: /tmp/foo
+#        dest: /tmp/bar
+#        state: link
+#
+#    - name: be sure stat file
+#      stat:
+#        path: /tmp/sym_link
+#      register: stat_file
+#    - name:
+#      debug: var=stat_file
+#
+#    - name: gets file basename
+#      set_fact:
+#        basename: "{{stat_file.stat.lnk_source | basename }}"
+#      when: stat_file.stat.exists == true
+#
+#    - name: be sure file owner changed
+#      file:
+#        path: /tmp/toBeOwnerChanged
+#        owner: "{{ owner }}"
+#        group: "{{ group }}"
+#        recurse: true
+#
+#    - name: be sure file contents changed
+#      lineinfile:
+#        dest: /tmp/file1.conf
+#        regexp: "^ServerName.*"
+#        line: "ServerName {{ansible_fqdn}}"
+#        state: present
+#
+#    - name: when and condition
+#      debug: var=snipets
+#      when:
+#        - snipets is defined
+#        - snipets == true
+#
+#  when: snipets is defined
+#
+##
+## other snipets 
+##
+#- name: other snipets
+#  block:
+#    - name: sample template with restart service
+#      template:
+#        src: templates/foo.conf.j2
+#        dest: /etc/bar/foo.conf
+#        owner: root
+#        group: root
+#        mode: 0600
+#      notify: restart sample-service
+#
+#    - name: be sure packages installed
+#      apt:
+#        name: "{{ packages }}"
+#      vars:
+#        packages:
+#          - tree
+#          - curl 
+#
+#    #
+#    # command: not use redirect, pipe etc.
+#    # shell: use environment variable, redirect, pipe
+#    - name: be sure command execute
+#      command: cat /etc/motd
+#      register: motd_content
+#    - name: be sure shell execute.    
+#      shell: |
+#        cat /etc/motd | grep foo
+#        ps auxw
+#      # Not change status
+#      changed_when: false
+#      # ignore error occurred
+#      ignore_errors: true
+#
+#  when: snipets is defined
+#
+##
+## snipets of the service
+##
+#- name: snipets of the service
+#  block:
+#    - name: gets service facts
+#      service_facts:
+#    - name: be sure sample service stopped
+#      service:
+#        name: sample-service
+#        state: stopped
+#        enabled: no
+#      when: "'sample.service' in ansible_facts.services"
+#
+#    - name: be sure service setup
+#      service:
+#        name: sample-service
+#        state: restarted
+#        enabled: yes
+#
+#  when: service is defined
+
+#
+# group_vars
+#
+#- name: gets group variables
+#  debug:
+#    msg: "{{ sample_group_prop1 }}"
+#
+##
+## host_vars
+##
+#- name: gets host variables
+#  debug:
+#    msg: "{{ host1_prop1 }}"
+
+
+#
+# gets evidence
+#
+#- name: gets evidence
+#  fetch:
+#    src: /var/log/syslog
+#    dest: ./evidence
+#  when: evidence is defined
