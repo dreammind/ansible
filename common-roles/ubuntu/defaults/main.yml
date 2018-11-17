@@ -1,0 +1,12 @@
+---
+
+#
+# default variables
+#
+
+install_net_tools: true
+install_fonts: false
+
+install_for_dev: false
+install_for_rbenv: false
+install_for_pyenv: false

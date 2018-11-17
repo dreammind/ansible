@@ -58,6 +58,111 @@
           - manpages-ja-dev
   
 
+# 
+# development tools
+#
+- name: development tools
+  block:
+    - name: development tools
+      apt: 
+        name: "{{ packages }}"
+        state: present
+      vars:
+        packages:
+          - build-essential
+          - autoconf
+          - automake
+          - lv
+          - screen
+          - git
+          - tig
+          - tree
+          - zip
+          - unzip
+  when: install_for_dev
+
+#
+# install for rbenv
+#
+- name: install for rbenv
+  block:
+    - name: be sure rbenv environment
+      apt: 
+        name: "{{ packages }}"
+        state: present
+      vars:
+        packages:
+          - bison
+          - libssl-dev
+          - libyaml-dev
+          - libreadline6-dev
+          - zlib1g-dev
+          - libncurses5-dev 
+          - libffi-dev
+          - libgdbm3
+          - libgdbm-dev
+  when: install_for_rbenv
+
+#
+# install for pyenv
+#
+- name: install for pyenv
+  block:
+    - name: be sure pyenv environment
+      apt: 
+        name: "{{ packages }}"
+        state: present
+      vars:
+        packages:
+          - autoconf
+          - bison
+          - build-essential
+          - zlib1g-dev
+          - libssl-dev
+          - libyaml-dev
+          - libreadline6-dev
+          - libncurses5-dev
+          - libsqlite3-dev
+          - libbz2-dev
+  when: install_for_pyenv
+
+#
+# install for fonts
+#
+- name: install fonts 
+  block:
+    - name: be sure japanese fonts installed
+      apt: 
+        name: "{{ packages }}"
+        state: present
+      vars:
+        packages:
+          - fonts-takao
+          - fonts-takao-gothic
+          - fonts-takao-mincho
+          - fonts-takao-pgothic
+  when: install_fonts 
+
+# 
+# network tools
+#
+- name: network tools
+  block:
+    - name: be sure network tools install
+      apt: 
+        name: "{{ packages }}"
+        state: present
+      vars:
+        packages:
+          - dnsutils
+          - traceroute
+          #- wireshark
+          #- iperf
+          #- speedometer
+          #- echoping
+  when: install_net_tools
+
+
 ##
 ## snipets for file
 ##
