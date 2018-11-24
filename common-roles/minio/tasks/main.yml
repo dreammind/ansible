@@ -1,0 +1,77 @@
+---
+#
+# Initialize
+#
+
+- name: Initialize block
+  block:
+    - name: be sure minio gorup created
+      group:
+        name: "{{ minio_group }}"
+
+    - name: be sure minio user created
+      user:
+        name: "{{ minio_user }}"
+        group: "{{ minio_group }}"
+        create_home: no
+
+    - name: be sure directories created
+      file: 
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ minio_user }}"
+        group: "{{ minio_group }}"
+        mode: 0750
+      with_items:
+        - "{{ minio_root_dir}}"
+        - "{{ minio_root_dir}}/bin"
+        - "{{ minio_root_dir}}/config"
+        - "{{ minio_root_dir}}/data"
+
+#
+# Get facts
+#
+
+- name: Get facts
+  block:
+    - name: gets fact of the minio executable file
+      stat:
+        path: "{{ minio_root_dir }}/bin/minio"
+      register: minio_file
+#
+# main routine
+#
+- name: main routine
+  block:
+    - name: gets minio server
+      get_url:
+        url: https://dl.minio.io/server/minio/release/linux-amd64/minio
+        dest: "{{ minio_root_dir }}/bin/minio"
+        owner: "{{ minio_user }}"
+        group: "{{ minio_group }}"
+        mode: 0750
+      when: minio_file.stat.exists == false
+
+    - name: be sure configuration to /etc/default copied
+      template:
+        src: templates/default.minio.j2
+        dest: /etc/default/minio
+        owner: minio
+        group: minio
+        mode: 0640
+      notify: restart minio
+
+    - name: be sure service file copied
+      template:
+        src: templates/minio.service.j2
+        dest: /etc/systemd/system/minio.service
+        owner: root
+        group: root
+        mode: 0644
+      notify: restart minio
+
+    - name: be sure service setup
+      service:
+        name: minio
+        state: started
+        enabled: yes

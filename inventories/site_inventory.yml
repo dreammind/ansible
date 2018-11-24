@@ -2,6 +2,11 @@ all:
   hosts:
     localhost:
   children: 
+    minio-group:
+      hosts:
+        linux3:
+          # for ubuntu 16.04 or more
+          ansible_python_interpreter: /usr/bin/python3
     ubuntu-group:
       hosts:
         linux3:

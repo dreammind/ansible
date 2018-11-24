@@ -1,0 +1,5 @@
+- name: minio
+  hosts: minio-group
+  become: yes
+  roles:
+    - { role: minio }

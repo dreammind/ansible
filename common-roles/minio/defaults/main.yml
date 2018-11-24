@@ -1,0 +1,14 @@
+---
+#
+# Defaults variables
+#
+
+minio_root_dir: /opt/minio
+
+minio_volumes: /opt/minio/data
+
+minio_user: minio
+minio_group: minio
+
+minio_access_key: admin1
+minio_secret_key: adminadmin

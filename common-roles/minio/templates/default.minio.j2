@@ -1,0 +1,8 @@
+MINIO_VOLUMES= {{ minio_volumes }}
+# Use if you want to run Minio on a custom port.
+MINIO_OPTS="--config-dir {{ minio_root_dir}}/config"
+# Access Key of the server.
+MINIO_ACCESS_KEY={{ minio_access_key }}
+# Secret key of the server.
+MINIO_SECRET_KEY={{ minio_secret_key }}
+
