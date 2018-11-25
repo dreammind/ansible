@@ -2,4 +2,4 @@
   hosts: minio-group
   become: yes
   roles:
-    - { role: minio }
+    - { role: minio, use_nginx_reverse_proxy: true, nginx_fqdn: 192.168.56.104 }

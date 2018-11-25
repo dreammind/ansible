@@ -75,3 +75,58 @@
         name: minio
         state: started
         enabled: yes
+
+#
+# nginx get facts
+#
+- name: get facts#
+  block:
+    - name: gets fact of private key
+      stat:
+        path: /etc/nginx/ssl/{{ nginx_fqdn }}.key
+      register: fqdn_private_key
+
+    - name: gets fact of public key
+      stat:
+        path: /etc/nginx/ssl/{{ nginx_fqdn }}.crt
+      register: fqdn_public_key
+
+#
+# nginx reverse proxy
+#
+- name: nginx reverse proxy 
+  block:
+    - name: be sure nginx installed
+      apt:
+        name: nginx
+
+    - name: be sure nginx ssl directory created
+      file:
+        path: /etc/nginx/ssl
+        state: directory
+        mode: 0755
+
+    - name: be sure SSL server private key created
+      command: openssl genrsa -out /etc/nginx/ssl/{{nginx_fqdn}}.key 2048
+      when: fqdn_private_key.stat.exists == false
+
+    - name: be sure SSL server public key created
+      command: openssl req -new -x509 -days 3650 -key /etc/nginx/ssl/{{ nginx_fqdn }}.key -out /etc/nginx/ssl/{{ nginx_fqdn }}.crt -subj "/C=JP/ST=Tokyo/L=Chiyoda-ku/O=organization/CN=<{{ nginx_fqdn }}>"
+      when: fqdn_public_key.stat.exists == false
+
+
+    - name: be sure default configuration deleted
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      notify: restart nginx
+
+    - name: be sure nginx configuration for minio
+      template:
+        src: templates/nginx/minio-reverse-proxy.j2
+        dest: /etc/nginx/sites-enabled/minio-reverse-proxy
+        mode: 0644
+      notify: restart nginx
+
+
+  when: use_nginx_reverse_proxy
