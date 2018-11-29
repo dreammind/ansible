@@ -1,0 +1,105 @@
+---
+#
+# Initialize
+#
+- name: Initialize block
+  block:
+    - name: gets fact of the nodesource.list
+      stat:
+        path: /etc/apt/sources.list.d/nodesource.list
+      register: nodesource
+
+    - name: gets nodesource_content
+      command: cat /etc/apt/sources.list.d/nodesource.list
+      register: nodesource_content
+      changed_when: false
+      when: nodesource.stat.exists
+    #- debug: var="nodesource_content"
+    
+    - set_fact:
+        nodesource_ready: true  
+      when: 
+        - nodesource.stat.exists
+        - nodesource_content.stdout.find("node_" + node_version) != -1
+    #- debug: var=nodesource_ready      
+
+    - name: create temporary file for nodejs setup file download
+      tempfile:
+        state: file
+        prefix: nodejs_
+      register: tmp_file
+      when: nodesource_ready is not defined or
+            nodesource_ready == false
+
+    - name: gets nodejs setup file
+      get_url:
+        url: "https://deb.nodesource.com/setup_{{ node_version }}"
+        dest: "{{tmp_file.path}}"
+        force: yes
+      when: nodesource_ready is not defined or
+            nodesource_ready == false
+
+    - name: be sure nodejs apt repository setup
+      shell: |
+        bash {{ tmp_file.path }}
+        rm -f {{ tmp_file.path }}
+      when: nodesource_ready is not defined or
+            nodesource_ready == false
+
+
+    #
+    # Setup yarn sources
+    #
+    - name: gets fact of yarn sources
+      stat:
+        path: /etc/apt/sources.list.d/yarn.list
+      register: yarnsource
+
+    - name: create temporary file for yarn setup file download
+      tempfile:
+        state: file
+        prefix: yarn_
+      register: tmp_file
+      when: yarnsource.stat.exists == false
+
+    - name: gets yarn public key
+      get_url:
+        url: https://dl.yarnpkg.com/debian/pubkey.gpg
+        dest: "{{ tmp_file.path }}"
+        force: yes
+      when: yarnsource.stat.exists == false
+
+    - name: be sure yarn apt repository setup
+      shell: |
+        apt-key add {{ tmp_file.path }}
+        echo "deb https://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list
+        apt update -y
+        rm -f {{ tmp_file.path }}
+      when: yarnsource.stat.exists == false
+
+
+#
+# main routine
+#
+- name: main routine
+  block:
+    - name: be sure nodejs install
+      apt:
+        name: nodejs
+        state: present
+
+    - name: be sure yarn install
+      apt:
+        name: yarn 
+        state: present
+
+    # Gets npm packages
+    - name: gets fact of the npm packages
+      command: npm list -g --depth=0 --parseable
+      register: npm_list
+      changed_when: false
+
+    - name: be sure npm global packages install
+      command: npm i {{ item }} -g
+      with_items: "{{ npm_global_packages }}"
+      when: npm_list.stdout.find(item) == -1
