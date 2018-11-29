@@ -1,0 +1,28 @@
+---
+
+#
+# ansistrano before setup tasks
+#
+
+- name: be sure group created
+  become: yes
+  group:
+    name: "{{ group }}"
+
+- name: be sure user created
+  become: yes
+  user:
+    name: "{{ user }}"
+    group: "{{ group }}"
+    generate_ssh_key: yes
+    create_home: yes
+
+- name: be sure install dir created
+  become: yes
+  file:
+    path: "{{ ansistrano_deploy_to }}"
+    state: directory
+    owner: "{{ user }}"
+    group: "{{ group }}"
+    recurse: true
+    mode: 0755

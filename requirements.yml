@@ -1,4 +1,7 @@
 ## from galaxy https://galaxy.ansible.com/
+- src: ansistrano.deploy
+- src: ansistrano.rollback
+
 #
 # - src: nickhammond.logrotate
 

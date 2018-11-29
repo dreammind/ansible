@@ -1,0 +1,51 @@
+---
+#
+# ansistrano after update code tasks
+#
+
+- name: be sure install dir created
+  become: yes
+  file:
+    path: "{{ ansistrano_deploy_to }}"
+    state: directory
+    owner: "{{ user }}"
+    group: "{{ group }}"
+    recurse: true
+    mode: 0755
+
+- name: be sure yarn for frontend
+  become: yes
+  become_user: "{{ user }}"
+  command: yarn
+  args:
+    chdir: "{{ ansistrano_deploy_to }}/releases/{{ ansistrano_release_version }}/frontend"
+
+- name: be sure yarn build for frontend
+  become: yes
+  become_user: "{{ user }}"
+  command: yarn build
+  args:
+    chdir: "{{ ansistrano_deploy_to }}/releases/{{ ansistrano_release_version }}/frontend"
+
+- name: be sure symboilc link to dist
+  become: yes
+  become_user: "{{ user }}"
+  file:
+    state: link
+    src: ../frontend/dist
+    dest: "{{ ansistrano_deploy_to }}/releases/{{ ansistrano_release_version }}/backend/dist"
+
+- name: be sure yarn for backend
+  become: yes
+  become_user: "{{ user }}"
+  command: yarn
+  args:
+    chdir: "{{ ansistrano_deploy_to }}/releases/{{ ansistrano_release_version }}/backend"
+
+
+#
+# ToDo
+# 0) become: yes
+#    become
+# 1) copy to service
+#
