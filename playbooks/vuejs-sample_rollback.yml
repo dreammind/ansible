@@ -1,0 +1,33 @@
+- hosts: vuejs-deploy-group
+  name: "ansistrano spike"
+  become: yes
+
+  vars:
+    product_name: vuejs-sample
+    user: vuejs-sample
+    group: vuejs-sample
+
+    ansistrano_allow_anonymous_stats: no
+
+    ansistrano_deploy_to: "/opt/{{ product_name }}"
+    ansistrano_deploy_via: git
+    ansistrano_git_repo: git@github.com:dreammind/vuejs-sample.git
+    # Please setup id_rsa.pub to github.
+    ansistrano_git_identity_key_remote_path: /home/{{ user }}/.ssh/id_rsa
+    ansistrano_git_branch: master
+    ansistrano_shared_paths: ["log","config"]
+
+    ansistrano_rollback_after_symlink_tasks_file: ../common-roles/my-ansistrano/tasks/after_symlink.yml
+#  vars_files:
+#    - vars/all/main.yml
+#    - vars/{{ stage }}/main.yml
+#    - vars/{{ stage }}/secret.yml
+  roles:
+    - {
+        role: nodejs-worldwide,
+        become: yes,
+        node_version: 10.x,
+        npm_global_packages: [ nodemon ]
+      }
+
+    - ansistrano.rollback
