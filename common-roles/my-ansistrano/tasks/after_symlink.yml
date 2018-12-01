@@ -1,0 +1,13 @@
+---
+
+# 
+# after symlink
+#
+
+- name: restart systemd script
+  become: yes
+  systemd:
+    name: "{{ product_name }}"
+    state: restarted
+    daemon_reload: yes
+    enabled: yes

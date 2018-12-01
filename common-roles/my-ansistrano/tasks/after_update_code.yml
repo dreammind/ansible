@@ -42,10 +42,16 @@
   args:
     chdir: "{{ ansistrano_deploy_to }}/releases/{{ ansistrano_release_version }}/backend"
 
+- name: be sure systemd script copied
+  template:
+    src: ../templates/nodejs.service.j2
+    dest: /etc/systemd/system/{{ product_name }}.service
+    owner: root
+    group: root
+    mode: 0644
 
 #
 # ToDo
-# 0) become: yes
-#    become
 # 1) copy to service
+# 2) systemd enabled
 #

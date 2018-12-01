@@ -1,0 +1,19 @@
+[Unit]
+Description=nodejs sample
+After=network.target
+
+[Service]
+Type=simple
+
+WorkingDirectory={{ ansistrano_deploy_to }}/current/backend
+ExecStart=/usr/bin/node index.js
+
+Restart=always
+RestartSec=10
+
+Environment="NODE_ENV=production"
+User={{ user }}
+Group={{ group }}
+
+[Install]
+WantedBy=multi-user.target
