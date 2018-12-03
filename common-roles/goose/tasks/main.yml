@@ -1,0 +1,53 @@
+---
+#
+# Initialize
+#
+
+- name: Initialize block
+  block:
+    - name: be sure packages installed
+      apt:
+        name: "{{ packages }}"
+      vars:
+        packages:
+          - gcc
+          - make
+          - golang-1.10
+    - name: be sure file contents changed
+      lineinfile:
+        dest: /etc/bash.bashrc
+        regexp: "go-1.10"
+        line: 'export PATH=/usr/lib/go-1.10/bin:$PATH'
+        state: present
+
+    - name: be sure go get goose stat file
+      stat:
+        path: /root/go/bin/goose
+      register: goose_file
+    
+    - name: 
+      stat:
+        path: /usr/local/bin/goose
+      register: goose_local
+
+
+#
+# main routine
+#
+- name: main routine
+  block:
+    - name: go get -u goose
+      command: /usr/lib/go-1.10/bin/go get -u github.com/pressly/goose/cmd/goose
+      when:
+        - goose_file.stat.exists == false
+
+    - name: Install goose to /usr/local/bin
+      copy:
+        src: /root/go/bin/goose
+        dest: /usr/local/bin/goose
+        remote_src: true
+        owner: root
+        group: root
+        mode: 0755
+
+

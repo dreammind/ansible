@@ -1,0 +1,5 @@
+- name: setup goose 
+  hosts: goose-group
+  become: yes
+  roles:
+    - role: goose
