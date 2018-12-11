@@ -56,6 +56,20 @@
         packages:
           - manpages-ja
           - manpages-ja-dev
+    - name: be sure preserve hostname true
+      lineinfile:
+        dest: /etc/cloud/cloud.cfg
+        regexp: "^preserve_hostname: false"
+        line: "preserve_hostname: true"
+        state: present
+        backrefs: yes
+        backup: yes
+
+    - name: be sure set hostname
+      command: hostnamectl set-hostname {{ hostname }}
+      when: 
+        - hostname is defined
+        - ansible_hostname != hostname
   
 
 # 
