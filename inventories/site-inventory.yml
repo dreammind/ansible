@@ -1,0 +1,59 @@
+all:
+  children: 
+    kubernetes-group:
+      hosts:
+        # master
+        k8s-m1:
+          kubernetes_role: master
+          kubernetes_allow_pods_on_master: True
+          kubernetes_pod_network_cidr: '172.16.0.0/16'
+          swap_off: true
+          # if using swap
+          # kubernetes_kubelet_extra_args: "--fail-swap-on=false"
+        k8s-n1: 
+          kubernetes_role: node
+          kubernetes_pod_network_cidr: '172.16.0.0/16'
+          swap_off: true
+      vars:
+        ansible_python_interpreter: /usr/bin/python3
+
+    # 
+    # memo) mac$ mount_nfs -P 192.168.56.101:/export/docker-registry /tmp/mnt
+    nfs-group:
+      hosts:
+        k8s-etc:
+          nfs_exports:
+            - "/export/lesson2_nfs_nginx_html *(rw,sync,no_root_squash)"
+            - "/export/docker-registry *(rw,sync,no_root_squash)"
+
+    vuejs-deploy-group:
+      hosts:
+        linux3:
+          ansible_python_interpreter: /usr/bin/python3
+    goose-group:
+      hosts:
+        linux3:
+          ansible_python_interpreter: /usr/bin/python3
+    minio-group:
+      hosts:
+        linux3:
+          ansible_python_interpreter: /usr/bin/python3
+    ubuntu-group:
+      hosts:
+        prometheus:
+          hostname: prometheus
+        router:
+          hostname: router
+        rbm-local-dev:
+          hostname: rbm-local-dev
+        k8s-m1:
+          hostname: k8s-m1
+        k8s-n1:
+          hostname: k8s-n1
+        k8s-etc:
+          hostname: k8s-etc
+        linux3:
+      vars:
+        ansible_python_interpreter: /usr/bin/python3
+        install_for_dev: no
+        install_net_tools: yes
