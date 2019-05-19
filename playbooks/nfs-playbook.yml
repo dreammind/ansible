@@ -1,0 +1,5 @@
+- name: nfw
+  hosts: nfs-group
+  become: yes
+  roles:
+    - role: geerlingguy.nfs

@@ -1,6 +1,14 @@
 ## from galaxy https://galaxy.ansible.com/
 - src: ansistrano.deploy
 - src: ansistrano.rollback
+- src: geerlingguy.nfs
+
+# for kubernetes
+- src: geerlingguy.pip
+- src: geerlingguy.docker
+- src: geerlingguy.kubernetes
+  #version: 2.1.0
+
 
 #
 # - src: nickhammond.logrotate

@@ -1,0 +1,43 @@
+---
+# 
+# flannelのエラーが発生した場合、しばらく待ってから再起動する。
+# おそらく、kubernetesのdockerコンポーネントのダウンロードに時間がかかる
+# のとkubernetesかdockerの再起動が必要なため。
+- name: kubernetes
+  hosts: kubernetes-group
+  become: yes
+  module_defaults:
+    get_url:
+      timeout: 60
+  vars:
+    pip_install_package:
+      - name: docker
+
+  roles:
+    - role: geerlingguy.pip
+    - role: geerlingguy.docker
+    - role: geerlingguy.kubernetes
+
+  pre_tasks:
+    - name: be sure swap unused
+      block:
+      - name: Remove swapfile from /etc/fstab
+        mount:
+          name: swap
+          fstype: swap
+          state: absent
+      - name: Disable swap
+        command: swapoff -a
+        when: ansible_swaptotal_mb > 0
+
+      when:
+        - swap_off is defined
+        - swap_off
+
+  post_tasks:
+    - name: be sure docker images,etc cleaned
+      cron:
+        name: "docker prune"
+        minute: "20"
+        hour: "0"
+        job: "docker system prune -f"
