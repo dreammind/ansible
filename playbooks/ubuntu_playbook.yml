@@ -2,4 +2,4 @@
   hosts: ubuntu-group
   become: yes
   roles:
-    - { role: ubuntu }
+    - role: ubuntu
